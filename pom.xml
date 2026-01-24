@@ -69,7 +69,7 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.5.1</version>
         <configuration>
-          <mainClass>tp2.simulator.launcher.Main</mainClass> <!-- para mvn exec:java -->
+          <mainClass>simulator.launcher.Main</mainClass> <!-- para mvn exec:java -->
           <arguments>
             <!-- mueve argumentos fuera del comentario para que se usen
                 <argument>arg1</argument>
