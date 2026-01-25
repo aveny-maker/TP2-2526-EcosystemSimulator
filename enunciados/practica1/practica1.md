@@ -2,7 +2,7 @@
 
 **Objetivo:** Diseño orientado a objetos, y uso de genéricos y colecciones.
 
-**Fecha de entrega:** 02 de Marzo 2026, 15:00h
+**Fecha de entrega:** 02 de Marzo 2026, 09:00h.
 
 ## Control de Copias
 
@@ -37,7 +37,7 @@ Las siguientes instrucciones son **estrictas**, es decir, **debes seguirlas obli
    tendrás que hacerlo usando el `src.zip` de tu práctica.
 7. Es necesario usar exactamente la misma estructura de paquetes y los mismos nombres de clases que aparecen en el
    enunciado.
-8. La generación de números aleatorios se debe hacer usando Utils.RAND (ver el
+8. La generación de números aleatorios se debe hacer usando `Utils.RAND` (ver el
    apartado [Generación de Números Aleatorios](#generación-de-números-aleatorios)). Está prohibido crear otra instancia
    de la clase **Random** o usar **Math.random()**.
 9. Debes formatear todo el código usando la funcionalidad de Eclipse (`Source->Format`).
@@ -407,17 +407,17 @@ Diagrama de flujo del los pasos detallados abajo:
 
 Si el estado actual es `NORMAL`:
 
-1. Avanzar el animal según los siguiente pasos:
-1. Si la distancia del animal al destino (`dest`) es menor que `8.0`, elegir otro destino de manera aleatoria (dentro de
-   las dimensiones de mapa).
-2. Avanza (llamando a `move`) con velocidad `speed*dt*Math.exp((energy-100.0)*0.007)`.
-3. Añadir `dt` a la edad.
-4. Quitar `20.0*dt` a la energía (manteniéndola siempre entre `0.0` y `100.0`).
-5. Añadir `40.0*dt` al deseo (manteniéndolo siempre entre `0.0` y `100.0`).
+1. Avanzar el animal según los siguientes pasos:
+   1. Si la distancia del animal al destino (`dest`) es menor que `8.0`, elegir otro destino de manera aleatoria (dentro de
+      las dimensiones de mapa).
+   2. Avanza (llamando a `move`) con velocidad `speed*dt*Math.exp((energy-100.0)*0.007)`.
+   3. Añadir `dt` a la edad.
+   4. Quitar `20.0*dt` a la energía (manteniéndola siempre entre `0.0` y `100.0`).
+   5. Añadir `40.0*dt` al deseo (manteniéndolo siempre entre `0.0` y `100.0`).
 2. Cambio de estado
-1. Si `dangerSource` es `null`, buscar un nuevo animal que se considere peligroso.
-2. Si `dangerSource` no es `null`, cambiar el estado a `DANGER`, y si es `null` y el deseo mayor de `65.0` cambiar el
-   estado a `MATE`.
+   1. Si `dangerSource` es `null`, buscar un nuevo animal que se considere peligroso.
+   2. Si `dangerSource` no es `null`, cambiar el estado a `DANGER`, y si es `null` y el deseo mayor de `65.0` cambiar el
+      estado a `MATE`.
 
 Si el estado actual es `DANGER`:
 
@@ -425,17 +425,17 @@ Si el estado actual es `DANGER`:
    razón y ya no es peligroso.
 2. Si `dangerSource` es `null`, avanzar normalmente como el punto 1 del caso `NORMAL` arriba, y si `dangerSource` no es
    `null`:
-1. Queremos cambiar el destino para avanzar en la dirección contraria al peligro. Esto se puede hacer con
-   `pos.plus(pos.minus(dangerSource.getPosition()).direction())` como destino.
-2. Avanza (llamando a `move`) con velocidad `2.0*speed*dt*Math.exp((energy-100.0)*0.007)`.
-3. Añadir `dt` a la edad.
-4. Quitar `20.0*1.2*dt` a la energía  (manteniéndola siempre entre `0.0` y `100.0`).
-5. Añadir `40.0*dt` al deseo  (manteniéndolo siempre entre `0.0` y `100.0`).
+   1. Queremos cambiar el destino para avanzar en la dirección contraria al peligro. Esto se puede hacer con
+      `pos.plus(pos.minus(dangerSource.getPosition()).direction())` como destino.
+   2. Avanza (llamando a `move`) con velocidad `2.0*speed*dt*Math.exp((energy-100.0)*0.007)`.
+   3. Añadir `dt` a la edad.
+   4. Quitar `20.0*1.2*dt` a la energía  (manteniéndola siempre entre `0.0` y `100.0`).
+   5. Añadir `40.0*dt` al deseo  (manteniéndolo siempre entre `0.0` y `100.0`).
 3. Cambio de estado
-1. Si `dangerSource` es `null` o `dangerSource` no está en el campo visual del animal
-   1. buscar un nuevo animal que se considere como peligro.
-   2. Si `dangerSource` es `null`:
-  1. Si el deseo es menor que `65.0`, cambia el estado a `NORMAL`, en otro caso cámbialo a `MATE`.
+   1. Si `dangerSource` es `null` o `dangerSource` no está en el campo visual del animal
+      1. buscar un nuevo animal que se considere como peligro.
+      2. Si `dangerSource` es `null`:
+         1. Si el deseo es menor que `65.0`, cambia el estado a `NORMAL`, en otro caso cámbialo a `MATE`.
 
 Si el estado actual es `MATE`:
 
@@ -443,17 +443,17 @@ Si el estado actual es `MATE`:
    no lo va a seguir para emparejarse.
 2. Si `mateTarget` es `null`, buscar un animal para emparejarse y si no se encuentra uno avanza normalmente como el
    punto 1 del caso `NORMAL` arriba; en otro caso (donde `mateTarget` ya no es `null`):
-1. Queremos cambiar el destino para perseguir a `mateTarget`. Esto se puede hacer cambiándolo a
-   `mateTarget.getPosition()`.
-2. Avanza (llamando a `move`) con velocidad `2.0*speed*dt*Math.exp((energy-100.0)*0.007)`.
-3. Añadir `dt` a la edad.
-4. Quitar `20.0*1.2*dt` a la energía (manteniéndola siempre entre `0.0` y `100.0`).
-5. Añadir `40.0*dt` al deseo  (manteniéndolo siempre entre `0.0` y `100.0`).
-6. Si la distancia del animal a `mateTarget` es menor que `8.0`, entonces van a emparejarse según los siguientes pasos:
-   1. Resetear el deseo del animal y del `mateTarget` a `0.0`.
-   2. Si el animal no lleva un bebé ya, con probabilidad de `0.9` va a llevar a un nuevo bebé usando
-   `new Sheep(this, mateTarget)`.
-   3. Poner `mateTarget` a `null`.
+   1. Queremos cambiar el destino para perseguir a `mateTarget`. Esto se puede hacer cambiándolo a
+      `mateTarget.getPosition()`.
+   2. Avanza (llamando a `move`) con velocidad `2.0*speed*dt*Math.exp((energy-100.0)*0.007)`.
+   3. Añadir `dt` a la edad.
+   4. Quitar `20.0*1.2*dt` a la energía (manteniéndola siempre entre `0.0` y `100.0`).
+   5. Añadir `40.0*dt` al deseo  (manteniéndolo siempre entre `0.0` y `100.0`).
+   6. Si la distancia del animal a `mateTarget` es menor que `8.0`, entonces van a emparejarse según los siguientes pasos:
+      1. Resetear el deseo del animal y del `mateTarget` a `0.0`.
+      2. Si el animal no lleva un bebé ya, con probabilidad de `0.9` va a llevar a un nuevo bebé usando
+      `new Sheep(this, mateTarget)`.
+      3. Poner `mateTarget` a `null`.
 3. Si `dangerSource` es `null` buscar un nuevo animal que se considere como peligroso.
 4. Si `dangerSource` no es `null` cambia de estado a `DANGER`, y si es `null` y el deseo es menor que `65.0` cambia de
    estado a `NORMAL`.
@@ -527,16 +527,16 @@ Diagrama de flujo del los pasos detallados abajo:
 
 Si el estado actual es `NORMAL`:
 
-1. Avanzar el animal según los siguiente pasos:
-1. Si la distancia del animal al destino (`dest`) es menor que `8.0`, elegir otro destino de manera aleatoria (dentro de
-   las dimensiones de mapa).
-2. Avanza (llamando a `move`) con velocidad `speed*dt*Math.exp((energy-100.0)*0.007)`.
-3. Añadir `dt` a la edad.
-4. Quitar `18.0*dt` a la energía (manteniéndola siempre entre `0.0` y `100.0`).
-5. Añadir `30.0*dt` al deseo (manteniéndolo siempre entre `0.0` y `100.0`).
+1. Avanzar el animal según los siguientes pasos:
+   1. Si la distancia del animal al destino (`dest`) es menor que `8.0`, elegir otro destino de manera aleatoria (dentro de
+      las dimensiones de mapa).
+   2. Avanza (llamando a `move`) con velocidad `speed*dt*Math.exp((energy-100.0)*0.007)`.
+   3. Añadir `dt` a la edad.
+   4. Quitar `18.0*dt` a la energía (manteniéndola siempre entre `0.0` y `100.0`).
+   5. Añadir `30.0*dt` al deseo (manteniéndolo siempre entre `0.0` y `100.0`).
 2. Cambio de estado
-1. Si su energía es menor que `50.0` cambia de estado a `HUNGER`, y si no lo es y su deseo es mayor que `65.0` cambia de
-   estado a `MATE`. En otro caso no hace nada.
+   1. Si su energía es menor que `50.0` cambia de estado a `HUNGER`, y si no lo es y su deseo es mayor que `65.0` cambia de
+      estado a `MATE`. En otro caso no hace nada.
 
 Si el estado actual es `HUNGER`:
 
@@ -544,19 +544,19 @@ Si el estado actual es `HUNGER`:
    para cazarlo.
 2. Si `huntTarget` es `null`, avanzar normalmente como el punto `1` del caso `NORMAL` arriba, y si `huntTarget` no es
    `null`:
-1. Queremos cambiar el destino para avanzar hacia el animal que quiere cazar. Esto se puede hacer con
-   `huntTarget.getPosition()` como destino.
-2. Avanza (llamando a `move`) con velocidad `3.0*speed*dt*Math.exp((energy-100.0)*0.007)`.
-3. Añadir `dt` a la edad.
-4. Quitar `18.0*1.2*dt` a la energía  (manteniéndola siempre entre `0.0` y `100.0`).
-5. Añadir `30.0*dt` al deseo (manteniéndola siempre entre `0.0` y `100.0`).
-6. Si la distancia del animal a `huntTarget` es menor que `8.0`, entonces va a cazar según los siguientes pasos:
-   1. Poner el estado `huntTarget` a `DEAD`.
-   2. Poner `huntTarget` a `null`.
-   3. Sumar `50.0` a la energía (manteniéndola siempre entre `0.0` y `100.0`).
+   1. Queremos cambiar el destino para avanzar hacia el animal que quiere cazar. Esto se puede hacer con
+      `huntTarget.getPosition()` como destino.
+   2. Avanza (llamando a `move`) con velocidad `3.0*speed*dt*Math.exp((energy-100.0)*0.007)`.
+   3. Añadir `dt` a la edad.
+   4. Quitar `18.0*1.2*dt` a la energía  (manteniéndola siempre entre `0.0` y `100.0`).
+   5. Añadir `30.0*dt` al deseo (manteniéndola siempre entre `0.0` y `100.0`).
+   6. Si la distancia del animal a `huntTarget` es menor que `8.0`, entonces va a cazar según los siguientes pasos:
+      1. Poner el estado `huntTarget` a `DEAD`.
+      2. Poner `huntTarget` a `null`.
+      3. Sumar `50.0` a la energía (manteniéndola siempre entre `0.0` y `100.0`).
 3. Cambiar de estado
-1. Si su energía es mayor que `50.0`
-1. Si el deseo es menor que `65.0` cambia el estado a `NORMAL`, en otro caso cámbialo a `MATE`.
+   1. Si su energía es mayor que `50.0`
+   1. Si el deseo es menor que `65.0` cambia el estado a `NORMAL`, en otro caso cámbialo a `MATE`.
 
 Si el estado actual es `MATE`:
 
@@ -564,18 +564,18 @@ Si el estado actual es `MATE`:
    no lo va a seguir para emparejarse.
 2. Si `mateTarget` es `null`, buscar un animal para emparejarse y si no se encuentra uno avanza normalmente como el
    punto 1 del caso `NORMAL` arriba; en otro caso (`mateTarget` ya no era `null`):
-1. Queremos cambiar el destino para perseguir a `mateTarget`, esto se puede hacer con `mateTarget.getPosition()` como
-   destino.
-2. Avanza (llamando a `move`) con velocidad `3.0*speed*dt*Math.exp((energy-100.0)*0.007)`.
-3. Añadir `dt` a la edad.
-4. Quitar `18.0*1.2*dt` a la energía (manteniéndola siempre entre `0.0` y `100.0`).
-5. Añadir `30.0*dt` al deseo  (manteniéndola siempre entre `0.0` y `100.0`).
-6. Si la distancia del animal a `mateTarget` es menor que `8.0`, entonces van a emparejarse según los siguientes pasos:
-   1. Resetear el deseo del animal y del `mateTarget` a `0.0`.
-   2. Si el animal no lleva un bebé ya, con probabilidad de `0.9` va a llevar a un nuevo bebé usando
-   `new Wolf(this, mateTarget)`.
-   3. Quitar `10.0` de la energía (manteniéndola siempre entre `0.0` y `100.0`).
-   4. Poner `mateTarget` a `null`.
+   1. Queremos cambiar el destino para perseguir a `mateTarget`, esto se puede hacer con `mateTarget.getPosition()` como
+      destino.
+   2. Avanza (llamando a `move`) con velocidad `3.0*speed*dt*Math.exp((energy-100.0)*0.007)`.
+   3. Añadir `dt` a la edad.
+   4. Quitar `18.0*1.2*dt` a la energía (manteniéndola siempre entre `0.0` y `100.0`).
+   5. Añadir `30.0*dt` al deseo  (manteniéndola siempre entre `0.0` y `100.0`).
+   6. Si la distancia del animal a `mateTarget` es menor que `8.0`, entonces van a emparejarse según los siguientes pasos:
+      1. Resetear el deseo del animal y del `mateTarget` a `0.0`.
+      2. Si el animal no lleva un bebé ya, con probabilidad de `0.9` va a llevar a un nuevo bebé usando
+      `new Wolf(this, mateTarget)`.
+      3. Quitar `10.0` de la energía (manteniéndola siempre entre `0.0` y `100.0`).
+      4. Poner `mateTarget` a `null`.
 3. Si su energía es menor que `50.0` cambia de estado a `HUNGER`, y si no lo es y el deseo es menor que `65.0` cambia de
    estado a `NORMAL`.
 
@@ -1002,7 +1002,7 @@ subclases tienen que sobreescribir `fillInData` para rellenar los parámetros en
 distintas partes de la estructura `JSON` correspondiente (para mostrar al usuario cuando sea necesario).
 
 Las clases que extienden a `Builder<T>` son las responsables de asignar un valor a `typeTag` llamando a la constructora
-de la clase `Builder<T>`, y también de definir el método create_instance para crear un objeto del tipo `T` (o de
+de la clase `Builder<T>`, y también de definir el método `createInstance` para crear un objeto del tipo `T` (o de
 cualquier instancia que sea subclase de `T`) en caso de que toda la información necesaria se encuentre disponible en
 `data`. En otro caso genera una excepción de tipo `IllegalArgumentException` describiendo que información es
 incorrecta o no se encuentra disponible.
