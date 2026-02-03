@@ -10,9 +10,9 @@ public class Sheep extends Animal {
 
 
     //Constructores
-    public Sheep(SelectionStrategy mateStrategy, SelectionStrategy dangerStrategy,  Vector2D pos) {}
+    /*public Sheep(SelectionStrategy mateStrategy, SelectionStrategy dangerStrategy,  Vector2D pos);
     
-    protected Sheep(Sheep p1, Animal p2) {}
+    protected Sheep(Sheep p1, Animal p2);*/
     
 
 
