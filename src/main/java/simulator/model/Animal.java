@@ -1,6 +1,8 @@
 package simulator.model;
 
 
+import org.json.JSONObject;
+
 import simulator.misc.Utils;
 import simulator.misc.Vector2D;
 
@@ -121,7 +123,40 @@ public abstract class Animal implements Entity, AnimalInfo {
         return b;
     }
 
-    protected void 
+    protected void move(double speed) {
+        pos = pos.plus(dest.minus(pos).direction().scale(speed));
+    }
+
+    protected void setState(State state) {
+        this.state = state;
+        switch (state) {
+            case NORMAL -> setNormalStateAction();
+            case MATE -> setMateStateAction();
+            case HUNGER -> setHungerStateAction();
+            case DANGER -> setDangerStateAction();
+            case DEAD -> setDeadStateAction();
+        }
+    }
+
+    // Métodos abstractos que deben implementar Sheep y Wolf
+    protected abstract void setNormalStateAction();
+    protected abstract void setMateStateAction();
+    protected abstract void setHungerStateAction();
+    protected abstract void setDangerStateAction();
+    protected abstract void setDeadStateAction();
+
+    @Override
+    public JSONObject asJSON() {
+        JSONObject jo = new JSONObject();
+        jo.put("pos", pos.asJSONArray()); // Usamos el método de Vector2D
+        jo.put("gcode", geneticCode);
+        jo.put("diet", diet.toString());
+        jo.put("state", state.toString());
+        return jo;
+    }
+
+
+
 
 
 
