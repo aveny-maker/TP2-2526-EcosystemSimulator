@@ -8,7 +8,16 @@ import simulator.misc.Vector2D;
 
 public abstract class Animal implements Entity, AnimalInfo {
 
-    //Atributos
+    //CONSTANTES
+    final static double INIT_ENERGY = 100.0;
+    final static double MUTATION_TOLERANCE = 0.2;
+    final static double NEARBY_FACTOR = 60.0;
+    final static double COLLISION_RANGE = 8;
+    final static double HUNGER_DECAY_EXP_FACTOR = 0.007;
+    final static double MAX_ENERGY = 100.0;
+    final static double MAX_DESIRE = 100.0;
+
+    //ATRIBUTOS 
     protected String geneticCode;
     protected Diet diet;
     protected State state;
@@ -25,7 +34,7 @@ public abstract class Animal implements Entity, AnimalInfo {
     protected Animal mateTarget;
 
 
-    //Constructores
+    //CONSTRUCTORES
 
     //Cuando se crea un animal desde 0
     protected Animal(String geneticCode, Diet diet, double sightRange, double initSpeed, SelectionStrategy mateStrategy, Vector2D pos) {
@@ -79,7 +88,7 @@ public abstract class Animal implements Entity, AnimalInfo {
     }
 
 
-    //Metodos
+    //METODOS
     public void init(AnimalMapView regMngr){
 
         //inicializar el gestor de regiones
@@ -104,7 +113,7 @@ public abstract class Animal implements Entity, AnimalInfo {
         this.dest = new Vector2D(destX, destY);
     }
 
-    private Vector2D fixPosition(double x, double y) {
+    protected Vector2D fixPosition(double x, double y) {
         int width = regionMngr.getWidth();   
         int height = regionMngr.getHeight(); 
         
@@ -154,13 +163,5 @@ public abstract class Animal implements Entity, AnimalInfo {
         jo.put("state", state.toString());
         return jo;
     }
-
-
-
-
-
-
-
-
 
 }
