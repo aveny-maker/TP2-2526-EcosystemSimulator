@@ -154,6 +154,57 @@ public abstract class Animal implements Entity, AnimalInfo {
     protected abstract void setDangerStateAction();
     protected abstract void setDeadStateAction();
 
+    //GETTERS
+    @Override
+    public State getState() {
+        return state;
+    }
+
+    @Override
+    public Vector2D getPosition() {
+        return pos;
+    }
+
+    @Override
+    public String getGeneticCode() {
+        return geneticCode;
+    }
+
+    @Override
+    public Diet getDiet() {
+        return diet;
+    }
+
+    @Override
+    public double getSpeed() {
+        return speed;
+    }
+
+    @Override
+    public double getSightRange() {
+        return sightRange;
+    }
+
+    @Override
+    public double getEnergy() {
+        return energy;
+    }
+
+    @Override
+    public double getAge() {
+        return age;
+    }
+
+    @Override
+    public Vector2D getDestination() {
+        return dest;
+    }
+
+    @Override
+    public boolean isPregnant() {
+        return baby != null;
+    }
+
     @Override
     public JSONObject asJSON() {
         JSONObject jo = new JSONObject();
