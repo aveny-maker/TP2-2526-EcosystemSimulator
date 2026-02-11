@@ -1,5 +1,5 @@
 package simulator.model;
-//pollita
+
 
 import org.json.JSONObject;
 

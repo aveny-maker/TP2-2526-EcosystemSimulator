@@ -72,10 +72,10 @@ public class Sheep extends Animal {
     //METODO UPDATE PRINCIPAL
     @Override
     public void update(double dt) {
-        // 1. Si está muerto, no hace nada
+        // Si está muerto, no hace nada
         if (state == State.DEAD) return;
 
-        // 2. Lógica específica según el estado actual
+        // Lógica específica según el estado actual
         switch (state) {
         case NORMAL -> updateNormal(dt);
         case DANGER -> updateDanger(dt);
@@ -84,7 +84,7 @@ public class Sheep extends Animal {
             }
         }
 
-        // 3. Verificar si se ha salido del mapa
+        // Verificar si se ha salido del mapa
         if (pos.getX() < 0 || pos.getX() >= regionMngr.getWidth() ||
             pos.getY() < 0 || pos.getY() >= regionMngr.getHeight()) {
             // Usamos el método protected de la clase padre
@@ -92,12 +92,12 @@ public class Sheep extends Animal {
             setState(State.NORMAL);
         }
 
-        // 4. Verificar condiciones de muerte (Edad o Energía)
+        // Verificar condiciones de muerte (Edad o Energía)
         if (energy <= 0.0 || age > MAX_AGE_SHEEP) {
             setState(State.DEAD);
         }
 
-        // 5. Alimentación (si sigue vivo)
+        // Alimentación (si sigue vivo)
         if (state != State.DEAD) {
             double food = regionMngr.getFood(this, dt);
             this.energy += food;
@@ -107,20 +107,146 @@ public class Sheep extends Animal {
 
 
     //METODOS AUXILIARES UPDATE
-    private void updateNormal(double dt) {}
-    private void updateDanger(double dt) {}
-    private void updateMate(double dt) {}
+    private void updateNormal(double dt) {
+        //Avanzar 
+        advanceNormal(dt);
+
+        //Cambio estado
+        //Si no hay peligroso buscar a uno que lo sea
+        if (dangerSource == null) {
+            dangerSource = dangerStrategy.select(this, regionMngr.getAnimalsInRange(this, a -> a.getDiet() == Diet.CARNIVORE));
+        }
+
+        //Cambio estado a danger o mate
+        if (dangerSource != null) {
+            setState(State.DANGER);
+        } else if (desire > DESIRE_THRESHOLD_SHEEP) {
+            setState(State.MATE);
+        }
+
+    }
 
 
 
 
+    private void updateDanger(double dt) {
+        //Verificar si el peligro ha muerto
+        if (dangerSource != null && dangerSource.getState()== State.DEAD) {
+            dangerSource = null;
+        }
 
+        //Movimiento
+        if (dangerSource == null) {
+            //si no hay peligro, avanza como en el estado normal
+            advanceNormal(dt);
+        }
+        else {
+            //Comportamiento de huida
 
+            //huir en dirección contraria al peligro
+            dest = pos.plus(pos.minus(dangerSource.getPosition()).direction());
 
+            //se mueve mas rapido
+            double moveSpeed = BOOST_FACTOR_SHEEP * speed * dt * Math.exp((energy - 100.0) * 0.007); 
+            move(moveSpeed);
 
+            //actualizamos parametros
+            age += dt;
+            energy = Math.max(0.0, energy - FOOD_DROP_RATE_SHEEP * FOOD_DROP_BOOST_FACTOR_SHEEP * dt);
+            desire = Math.min(100.0, desire + DESIRE_INCREASE_RATE_SHEEP * dt);
+        }
 
+        //Cambio de estado
 
-    
+        if (dangerSource == null || pos.distanceTo(dangerSource.getPosition()) > sightRange) {
+            //busca nuevo peligro
+            dangerSource = dangerStrategy.select(this,regionMngr.getAnimalsInRange(this, a -> a.getDiet() == Diet.CARNIVORE));
+
+            //si tras buscar seguimos sin peligro
+            if (dangerSource == null) {
+                if (desire < DESIRE_THRESHOLD_SHEEP) {
+                    setState(State.NORMAL);
+                } else {
+                    setState(State.MATE);
+                }
+            }
+        }
+    }
+
+    private void updateMate(double dt) {
+        //Validar si la pareja sigue siendo válida (viva y visible)
+        if (mateTarget != null && (mateTarget.getState() == State.DEAD || pos.distanceTo(mateTarget.getPosition()) > sightRange)) {
+            mateTarget = null;
+        }
+
+        //Si no hay pareja, buscar una nueva
+        if (mateTarget == null) {
+            //buscamos animales con el mismo código genético
+            mateTarget = mateStrategy.select(this,regionMngr.getAnimalsInRange(this, a -> a.getGeneticCode().equals(SHEEP_GENETIC_CODE)));
+        }
+
+        //Comportamiento según si hay objetivo
+        if (mateTarget == null) {
+            //se comporta como en estado normal
+            advanceNormal(dt);
+        }
+        else {
+            //ir hacia la pareja
+            dest = mateTarget.getPosition();
+
+            //se mueve mas rapido
+            double moveSpeed = BOOST_FACTOR_SHEEP * speed * dt * Math.exp((energy - 100.0) * 0.007);
+            move(moveSpeed);
+
+            // actualizar parámetros
+            age += dt;
+            energy = Math.max(0.0, energy - FOOD_DROP_RATE_SHEEP * FOOD_DROP_BOOST_FACTOR_SHEEP * dt);
+            desire = Math.min(100.0, desire + DESIRE_INCREASE_RATE_SHEEP * dt);
+
+            // Interacción de apareamiento (si están cerca)
+            if (pos.distanceTo(mateTarget.getPosition())<8.0) {
+                //reseteo deseo ambos
+                this.desire = 0.0;
+                mateTarget.desire = 0.0;
+
+                //probabilidad embarazo
+                if (baby == null && simulator.misc.Utils.RAND.nextDouble() < PREGNANT_PROBABILITY_SHEEP) {
+                    baby = new Sheep(this, mateTarget);
+                }
+
+                //fin encuentro
+                mateTarget = null;
+            }
+        }
+
+        //Cambio de estado
+        if (dangerSource == null) {
+            dangerSource = dangerStrategy.select(this, regionMngr.getAnimalsInRange(this, a -> a.getDiet() == Diet.CARNIVORE));
+        }
+
+        if (dangerSource != null) {
+            setState(State.DANGER);
+        } else if (desire < DESIRE_THRESHOLD_SHEEP) {
+            setState(State.NORMAL);
+        }
+    }
+
+    // Método común para avanzar normalmente (usado cuando no hay amenaza)
+    private void advanceNormal(double dt) {
+        // Destino
+        if (pos.distanceTo(dest) < 8.0) {
+            dest = new Vector2D(simulator.misc.Utils.RAND.nextDouble() * regionMngr.getWidth(),simulator.misc.Utils.RAND.nextDouble() * regionMngr.getHeight());
+        }
+
+        // Movimiento
+        double moveSpeed = speed * dt * Math.exp((energy - 100.0) * 0.007);
+        move(moveSpeed);
+
+        //ctualizamos parámetros
+        age += dt;
+        energy = Math.max(0.0, energy - FOOD_DROP_RATE_SHEEP * dt);
+        desire = Math.min(100.0, desire + DESIRE_INCREASE_RATE_SHEEP * dt);
+    }
 
 
 }
