@@ -2,7 +2,11 @@ package simulator.launcher;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -14,7 +18,22 @@ import org.apache.commons.cli.ParseException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import simulator.control.Controller;
+import simulator.factories.Builder;
+import simulator.factories.BuilderBasedFactory;
+import simulator.factories.DefaultRegionBuilder;
+import simulator.factories.DynamicSupplyRegionBuilder;
+import simulator.factories.Factory;
+import simulator.factories.SelectClosestBuilder;
+import simulator.factories.SelectFirstBuilder;
+import simulator.factories.SelectYoungestBuilder;
+import simulator.factories.SheepBuilder;
+import simulator.factories.WolfBuilder;
 import simulator.misc.Utils;
+import simulator.model.Animal;
+import simulator.model.Region;
+import simulator.model.SelectionStrategy;
+import simulator.model.Simulator;
 
 public class Main {
 
@@ -37,35 +56,42 @@ public class Main {
       return desc;
     }
   }
-
-  // default values for some parameters
-  //
+  
+// default values for some parameters
   private final static Double DEFAULT_TIME = 10.0; // in seconds
+  private final static Double DEFAULT_DELTA_TIME = 0.03; // in seconds
 
   // some attributes to stores values corresponding to command-line parameters
-  //
   private static Double time = null;
+  private static Double deltaTime = null;
   private static String inFile = null;
+  private static String outFile = null;
+  private static boolean simpleViewer = false;
   private static ExecMode mode = ExecMode.BATCH;
+
+  //factorias
+  private static Factory<Animal> animalsFactory;
+  private static Factory<Region> regionsFactory;
+
 
   private static void parseArgs(String[] args) {
 
     // define the valid command line options
-    //
     Options cmdLineOptions = buildOptions();
 
     // parse the command line as provided in args
-    //
     CommandLineParser parser = new DefaultParser();
     try {
       CommandLine line = parser.parse(cmdLineOptions, args);
       parseHelpOption(line, cmdLineOptions);
       parseInFileOption(line);
+      parseOutFileOption(line);
       parseTimeOption(line);
+      parseDeltaTimeOption(line);
+      parseSimpleViewerOption(line);
 
-      // if there are some remaining arguments, then something wrong is
-      // provided in the command line!
-      //
+      // if there are some remaining arguments, then something wrong is provided in the command line!
+      
       String[] remaining = line.getArgs();
       if (remaining.length > 0) {
         String error = "Illegal arguments:";
@@ -90,11 +116,17 @@ public class Main {
     // input file
     cmdLineOptions.addOption(Option.builder("i").longOpt("input").hasArg().desc("A configuration file.").build());
 
+    // output file
+    cmdLineOptions.addOption(Option.builder("o").longOpt("output").hasArg().desc("Output file, where output is written.").build());
+
     // steps
-    cmdLineOptions.addOption(Option.builder("t").longOpt("time").hasArg()
-      .desc("An real number representing the total simulation time in seconds. Default value: "
-        + DEFAULT_TIME + ".")
-      .build());
+    cmdLineOptions.addOption(Option.builder("t").longOpt("time").hasArg().desc("An real number representing the total simulation time in seconds. Default value: "+ DEFAULT_TIME + ".").build());
+
+    // delta time
+    cmdLineOptions.addOption(Option.builder("dt").longOpt("delta-time").hasArg().desc("A double representing actual time, in seconds, per simulation step. Default value: " + DEFAULT_DELTA_TIME + ".").build());
+
+    // simple viewer
+    cmdLineOptions.addOption(Option.builder("sv").longOpt("simple-viewer").desc("Show the viewer window in console mode.").build());
 
     return cmdLineOptions;
   }
@@ -114,6 +146,10 @@ public class Main {
     }
   }
 
+  private static void parseOutFileOption(CommandLine line) throws ParseException {
+    outFile = line.getOptionValue("o");
+  }
+
   private static void parseTimeOption(CommandLine line) throws ParseException {
     String t = line.getOptionValue("t", DEFAULT_TIME.toString());
     try {
@@ -124,7 +160,39 @@ public class Main {
     }
   }
 
+  private static void parseDeltaTimeOption(CommandLine line) throws ParseException {
+    String dt = line.getOptionValue("dt", DEFAULT_DELTA_TIME.toString());
+    try {
+      deltaTime = Double.parseDouble(dt);
+      assert (deltaTime >= 0);
+    } catch (Exception e) {
+      throw new ParseException("Invalid value for delta-time: " + dt);
+    }
+  }
+
+  private static void parseSimpleViewerOption(CommandLine line) {
+    simpleViewer = line.hasOption("sv");
+  }
+
   private static void initFactories() {
+    //inicializar factoría de estrategias
+    List<Builder<SelectionStrategy>> strategyBuilders = new ArrayList<>();
+    strategyBuilders.add(new SelectFirstBuilder());
+    strategyBuilders.add(new SelectClosestBuilder());
+    strategyBuilders.add(new SelectYoungestBuilder());
+    Factory<SelectionStrategy> strategyFactory = new BuilderBasedFactory<>(strategyBuilders);
+
+    //inicializar factoría de regiones
+    List<Builder<Region>> regionBuilders = new ArrayList<>();
+    regionBuilders.add(new DefaultRegionBuilder());
+    regionBuilders.add(new DynamicSupplyRegionBuilder());
+    regionsFactory = new BuilderBasedFactory<>(regionBuilders);
+
+    //inicializar factoría de animales
+    List<Builder<Animal>> animalBuilders = new ArrayList<>();
+    animalBuilders.add(new SheepBuilder(strategyFactory));
+    animalBuilders.add(new WolfBuilder(strategyFactory));
+    animalsFactory = new BuilderBasedFactory<>(animalBuilders);
   }
 
   private static JSONObject loadJSONFile(InputStream in) {
@@ -133,7 +201,35 @@ public class Main {
 
 
   private static void start_batch_mode() throws Exception {
+    // cargar el archivo de entrada
     InputStream is = new FileInputStream(new File(inFile));
+    JSONObject jsonInput = loadJSONFile(is);
+
+    // configurar el archivo de salida (o consola si no hay output)
+    OutputStream os = (outFile == null) ? System.out : new FileOutputStream(new File(outFile));
+
+    // crear instancia del Simulador extrayendo datos del JSON
+    int cols = jsonInput.getInt("cols");
+    int rows = jsonInput.getInt("rows");
+    int width = jsonInput.getInt("width");
+    int height = jsonInput.getInt("height");
+
+    Simulator sim = new Simulator(cols, rows, width, height, animalsFactory, regionsFactory);
+
+    // crear instancia del Controlador
+    Controller ctrl = new Controller(sim);
+
+    // cargar datos desde el JSON
+    ctrl.loadData(jsonInput);
+
+    // arrancar la simulación
+    ctrl.run(time, deltaTime, simpleViewer, os);
+
+    // cerrar flujos (importante para no dejar archivos bloqueados)
+    if (outFile != null) {
+      os.close();
+    }
+    is.close();
   }
 
   private static void start_GUI_mode() throws Exception {
