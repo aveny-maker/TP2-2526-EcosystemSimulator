@@ -44,9 +44,12 @@ public class RegionManager implements AnimalMapView{
         // Inicializamos la matriz
         this.regions = new Region[rows][cols];
         
-        // Por defecto, llenamos todo con nulos (se configurarán después con setRegion)
-        // Ojo: en algunas versiones se inicializan aquí con DefaultRegion. 
-        // Nosotros dejaremos un método setRegion para hacerlo desde fuera.
+       // Rellenamos todo el mapa con DefaultRegion inicialmente
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                this.regions[i][j] = new DefaultRegion();
+            }
+        }
         
         this.animalRegion = new HashMap<>();
     }

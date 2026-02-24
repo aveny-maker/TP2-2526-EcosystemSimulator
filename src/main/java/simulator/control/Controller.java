@@ -1,12 +1,17 @@
 package simulator.control;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import simulator.model.AnimalInfo;
+import simulator.model.MapInfo;
 import simulator.model.Simulator;
-// import simulator.view.SimpleObjectViewer; // Se importará cuando hagamos la vista
+import simulator.view.SimpleObjectViewer;
+import simulator.view.SimpleObjectViewer.ObjInfo;
 
 public class Controller {
 
@@ -64,40 +69,46 @@ public class Controller {
         }
     }
 
+
+    // MÉTODO AUXILIAR PARA EL VISOR
+    private List<ObjInfo> toAnimalsInfo(List<? extends AnimalInfo> animals) {
+        List<ObjInfo> ol = new ArrayList<>(animals.size());
+        for (AnimalInfo a : animals) {
+            // El tamaño del cuadrado dependerá de la edad del animal
+            int size = (int) Math.round(a.getAge()) + 2;
+            ol.add(new ObjInfo(a.getGeneticCode(), (int) a.getPosition().getX(), (int) a.getPosition().getY(),size));
+        }
+        return ol;
+    }
+
     //EJECUCIÓN SIMULADOR
     public void run (double t, double dt, boolean sv, OutputStream out ) {
         //guardar estado inicial
         JSONObject initState = sim.asJSON();
 
         //configurar y abrir el visor si sv es true
-        /*
         SimpleObjectViewer view = null;
         if (sv) {
-            view = new SimpleObjectViewer("[ECOSYSTEM]", 
-                sim.getMapInfo().getWidth(), sim.getMapInfo().getHeight(), 
-                sim.getMapInfo().getCols(), sim.getMapInfo().getRows());
-            view.update(toListOfObjViewer(sim.getAnimals()), sim.getTime(), dt);
+            MapInfo m = sim.getMapInfo();
+            view = new SimpleObjectViewer("[ECOSYSTEM]", m.getWidth(), m.getHeight(), m.getCols(), m.getRows());
+            view.update(toAnimalsInfo(sim.getAnimals()), sim.getTime(), dt);
         }
-        */
 
         //bucle principal simulación 
         while (sim.getTime() <= t) {
             sim.advance(dt);
 
             //si el visor esta activo, se actualiza en cada paso
-            /*
             if (sv) {
-                view.update(toListOfObjViewer(sim.getAnimals()), sim.getTime(), dt);
+                view.update(toAnimalsInfo(sim.getAnimals()), sim.getTime(), dt);
             }
-            */
+               
         }
 
         //cerrar el visor (si se ha abierto)
-        /*
         if (sv) {
             view.close();
         }
-        */
 
         //guardar estado final
         JSONObject finalState = sim.asJSON();
