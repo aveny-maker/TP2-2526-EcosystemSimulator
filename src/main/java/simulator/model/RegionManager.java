@@ -74,7 +74,7 @@ public class RegionManager implements AnimalMapView{
         int col = (int) (x / regionWidth);
         int row = (int) (y / regionHeight);
 
-        // Ajuste de seguridad: Si el animal está justo en el borde (ej: x = width),
+        // Si el animal está justo en el borde,
         // el índice podría salirse del array. Lo ajustamos al último índice válido.
         if (col >= cols) col = cols - 1;
         if (row >= rows) row = rows - 1;

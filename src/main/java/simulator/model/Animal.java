@@ -38,7 +38,7 @@ public abstract class Animal implements Entity, AnimalInfo {
 
     //Cuando se crea un animal desde 0
     protected Animal(String geneticCode, Diet diet, double sightRange, double initSpeed, SelectionStrategy mateStrategy, Vector2D pos) {
-        // 1. Validaciones
+        // Validaciones
         if (geneticCode == null || geneticCode.isBlank()) 
             throw new IllegalArgumentException("Código genético no válido.");
         if (sightRange <= 0) 
@@ -48,21 +48,21 @@ public abstract class Animal implements Entity, AnimalInfo {
         if (mateStrategy == null) 
             throw new IllegalArgumentException("La estrategia de apareamiento es obligatoria.");
 
-        // 2. Asignación de parámetros recibidos
+        //  Asignación de parámetros recibidos
         this.geneticCode = geneticCode;
         this.diet = diet;
         this.sightRange = sightRange;
         this.mateStrategy = mateStrategy;
         this.pos = pos; 
 
-        // 3. Inicialización según fórmulas del enunciado
+        // Inicialización según fórmulas del enunciado
         this.speed = Utils.getRandomizedParameter(initSpeed, 0.1); 
         this.state = State.NORMAL;
         this.energy = 100.0; 
         this.desire = 0.0;
         this.age = 0.0;
         
-        // 4. Inicialización a null de referencias de control
+        // Inicialización a null de referencias de control
         this.dest = null;
         this.mateTarget = null;
         this.baby = null;
@@ -117,7 +117,7 @@ public abstract class Animal implements Entity, AnimalInfo {
         int width = regionMngr.getWidth();   
         int height = regionMngr.getHeight(); 
         
-        // Lógica toroidal proporcionada en el apéndice del enunciado
+        // Lógica toroidal proporcionada en el  enunciado
         while (x >= width) x = (x - width);
         while (x < 0) x = (x + width);
         while (y >= height) y = (y - height);
