@@ -134,18 +134,41 @@ public class RegionManager implements AnimalMapView{
     public List<Animal> getAnimalsInRange(Animal e, Predicate<Animal> filter) {
 
         List<Animal> animalsInRange = new ArrayList<>();
+
+        //Sacamos la posicion del animal 
+        double x = e.getPosition().getX();
+        double y = e.getPosition().getY();
+        double range = e.getSightRange();
+
+        //Sacamos la casilla en la que está el animal
+        int currentCol = (int) (x / regionWidth);
+        int currentRow = (int) (y / regionHeight);
+
+        //Casillas a las que alcanza a ver el animal
+        int extentCols = (int) (range / regionWidth) + 1;
+        int extentRows = (int) (range / regionHeight) + 1;
+
+        //limites del recuadro cortando lo que se salga del mapa
+
+        //fila
+        int startRow = Math.max(0, currentRow - extentRows);
+        int endRow = Math.min(rows - 1, currentRow + extentRows);
+
+        //columna
+        int startCol = Math.max(0, currentCol - extentCols);
+        int endCol = Math.min(cols - 1, currentCol + extentCols);
+    
+
         
-        // Recorremos todas las regiones para buscar animales
-        // Iterar todo el mapa es lo más seguro para evitar errores con la visión toroidal
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                Region r = regions[i][j];
-                if (r != null) {
-                    for (Animal a : r.getAnimals()) {
+        for (int r = startRow ; r <= endRow; r++) {
+            for (int c = startCol; c <= endCol; c++) {
+                Region region = regions[r][c];
+                if (region != null) {
+                    for (Animal a : region.getAnimals()) {
                         // No incluirse a sí mismo
                         if (a != e) {
                             //Comprobar filtro (si es carnívoro y la distancia visual)
-                            if (filter.test(a) && e.getPosition().distanceTo(a.getPosition()) <= e.getSightRange()) {
+                            if (filter.test(a) && e.getPosition().distanceTo(a.getPosition()) <= range) {
                                 animalsInRange.add(a);
                             }
                         }
@@ -196,7 +219,7 @@ public class RegionManager implements AnimalMapView{
         JSONObject jo = new JSONObject();
         JSONArray ja = new JSONArray();
 
-        // El bucle queda mucho más limpio: solo recorre y delega
+        // El bucle queda mucho más limpio, solo recorre y delega
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 ja.put(regionAsJSON(i, j));

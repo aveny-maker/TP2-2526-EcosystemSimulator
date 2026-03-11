@@ -64,16 +64,16 @@ public class Wolf extends Animal{
         this.huntTarget = null;
         this.mateTarget = null;
     }
+
+    @Override
+    protected double getMaxAge() {
+        return MAX_AGE_WOLF; // Le devolvemos la constante de edad del lobo
+    }
     
 
     // UPDATE 
     @Override
-    public void update(double dt) {
-        //Si esta muerto no hace nada
-        if (state == State.DEAD) {
-            return;
-        }
-
+    public void updateAnimal(double dt) {
         //Lógica específica según el estado actual
         switch (state) {
             case NORMAL: updateNormal(dt); break;
@@ -81,30 +81,10 @@ public class Wolf extends Animal{
             case MATE:   updateMate(dt);   break;
             case DANGER: /* Nunca entra en DANGER */ break;
             case DEAD:   break;
-        }
-
-        // Verificar límites del mapa (Mundo Toroidal)
-        if (pos.getX() < 0 || pos.getX() >= regionMngr.getWidth() ||
-            pos.getY() < 0 || pos.getY() >= regionMngr.getHeight()) {
-            pos = fixPosition(pos.getX(), pos.getY()); // Usamos el método protected de Animal
-            setState(State.NORMAL);
-        }
-
-        //Verificar condiciones de muerte (Edad o Energía)
-        if (energy <= 0.0 || age > MAX_AGE_WOLF) {
-            setState(State.DEAD);
-        }
-
-        //Alimentación pasiva
-        if (state != State.DEAD) {
-            double food = regionMngr.getFood(this, dt);
-            this.energy += food;
-            if (this.energy > MAX_ENERGY) {
-                this.energy = MAX_ENERGY;
-            }
-        }
-        
+        }        
     }
+
+
 
     //MÉTODOS AUXILIARES PARA UPDATE
     private void updateNormal(double dt){

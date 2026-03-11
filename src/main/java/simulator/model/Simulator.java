@@ -76,7 +76,7 @@ public class Simulator implements JSONable{
         //usamos lista auxiliar para no borrar elementos mientras iteramos
         List<Animal> deadAnimals = new ArrayList<>();
         for (Animal a : animals) {
-            if (a.getState() == State.DEAD) {
+            if (a.getState() == Animal.State.DEAD) {
                 deadAnimals.add(a);
                 regionManager.unregisterAnimal(a);
             }

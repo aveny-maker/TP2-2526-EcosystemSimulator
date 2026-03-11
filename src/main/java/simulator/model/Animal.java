@@ -17,6 +17,10 @@ public abstract class Animal implements Entity, AnimalInfo {
     final static double MAX_ENERGY = 100.0;
     final static double MAX_DESIRE = 100.0;
 
+    //ENUMERADOS
+    public enum Diet { HERBIVORE, CARNIVORE };
+    public enum State { NORMAL, MATE, HUNGER, DANGER, DEAD};
+
     //ATRIBUTOS 
     protected String geneticCode;
     protected Diet diet;
@@ -146,6 +150,45 @@ public abstract class Animal implements Entity, AnimalInfo {
             case DEAD -> setDeadStateAction();
         }
     }
+
+
+
+    //UPDATE
+    // --- AÑADE ESTO EN TU CLASE ANIMAL ---
+
+    @Override
+    public void update(double dt) {
+        //si esta muerto, no hace nada
+        if (state == State.DEAD) return;
+
+        // ejecutar la lógica específica de cada animal 
+        updateAnimal(dt);
+
+        // control de límites 
+        if (pos.getX() < 0 || pos.getX() >= regionMngr.getWidth() ||
+            pos.getY() < 0 || pos.getY() >= regionMngr.getHeight()) {
+            
+            pos = fixPosition(pos.getX(), pos.getY());
+            setState(State.NORMAL);
+        }
+
+        // verificar condiciones de muerte 
+        // (La edad máxima la pedimos a las subclases)
+        if (energy <= 0.0 || age > getMaxAge()) {
+            setState(State.DEAD);
+        }
+
+        // alimentación pasiva desde la región (si sigue vivo)
+        if (state != State.DEAD) {
+            double food = regionMngr.getFood(this, dt);
+            this.energy += food;
+            if (this.energy > MAX_ENERGY) this.energy = MAX_ENERGY;
+        }
+    }
+
+    // Métodos abstractos que el Lobo y la Oveja tienen que implementar obligatoriamente
+    protected abstract void updateAnimal(double dt);
+    protected abstract double getMaxAge();
 
     // Métodos abstractos que deben implementar Sheep y Wolf
     protected abstract void setNormalStateAction();

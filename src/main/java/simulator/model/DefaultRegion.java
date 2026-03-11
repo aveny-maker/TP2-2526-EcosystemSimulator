@@ -12,14 +12,14 @@ public class DefaultRegion extends Region {
      @Override
     public double getFood(AnimalInfo a, double dt) {
         //Si es carnívoro, devuelve 0.0
-        if (a.getDiet() == Diet.CARNIVORE) {
+        if (a.getDiet() == Animal.Diet.CARNIVORE) {
             return 0.0;
         }
         // Si es herbívoro, calculamos la comida según la fórmula
         // Primero contamos cuántos herbívoros (n) hay en esta región
         int n = 0;
         for (Animal animal : animals) {
-            if (animal.getDiet() == Diet.HERBIVORE) {
+            if (animal.getDiet() == Animal.Diet.HERBIVORE) {
                 n++;
             }
         }

@@ -67,14 +67,16 @@ public class Sheep extends Animal {
         // No se utiliza en Sheep
     }
 
+    @Override
+    protected double getMaxAge() {
+        return MAX_AGE_SHEEP; // Le devolvemos la constante de edad de la oveja
+    }
+
 
 
     //METODO UPDATE PRINCIPAL
     @Override
-    public void update(double dt) {
-        // Si está muerto, no hace nada
-        if (state == State.DEAD) return;
-
+    public void updateAnimal(double dt) {
         // Lógica específica según el estado actual
         switch (state) {
         case NORMAL -> updateNormal(dt);
@@ -82,26 +84,6 @@ public class Sheep extends Animal {
         case MATE -> updateMate(dt);
         default -> {
             }
-        }
-
-        // Verificar si se ha salido del mapa
-        if (pos.getX() < 0 || pos.getX() >= regionMngr.getWidth() ||
-            pos.getY() < 0 || pos.getY() >= regionMngr.getHeight()) {
-            // Usamos el método protected de la clase padre
-            pos = fixPosition(pos.getX(), pos.getY());
-            setState(State.NORMAL);
-        }
-
-        // Verificar condiciones de muerte (Edad o Energía)
-        if (energy <= 0.0 || age > MAX_AGE_SHEEP) {
-            setState(State.DEAD);
-        }
-
-        // Alimentación (si sigue vivo)
-        if (state != State.DEAD) {
-            double food = regionMngr.getFood(this, dt);
-            this.energy += food;
-            if (this.energy > MAX_ENERGY) this.energy = MAX_ENERGY;
         }
     }
 
