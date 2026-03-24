@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.Iterator;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -177,6 +178,52 @@ public class RegionManager implements AnimalMapView{
             }
         }
         return animalsInRange;
+    }
+
+
+
+    //ITERADOR DE REGIONES
+    @Override
+    public Iterator<MapInfo.RegionData> iterator() {
+
+
+        return new Iterator<MapInfo.RegionData> () {
+            //variables internas del iterador para ver por donde vamos
+            private int currentRow = 0;
+            private int currentCol = 0;
+
+            @Override
+            public boolean hasNext() {
+                //hay siguiente mientras que no nos salgamos de la ultima fila
+                return currentRow < rows;
+            }
+
+            @Override
+            public MapInfo.RegionData next () {
+                if (!hasNext()) {
+                    throw new java.util.NoSuchElementException();
+                }
+
+                //primero extraemos la región actual
+                RegionInfo r = regions[currentRow][currentCol];
+
+                //ahora empaquetamos los datos en el Record que hemos creado
+                MapInfo.RegionData data = new MapInfo.RegionData(currentRow, currentCol, r);
+
+                // avanzamos los índices 
+                currentCol++;
+                if (currentCol >= cols) {
+                    currentCol = 0; // Volvemos a la izquierda
+                    currentRow++;   // Bajamos a la siguiente fila
+                }
+
+                // devolvemos el paquete
+                return data;
+
+            }
+
+        };
+
     }
 
 

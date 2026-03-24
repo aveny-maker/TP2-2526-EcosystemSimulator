@@ -1,5 +1,6 @@
 package simulator.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,6 +39,11 @@ public abstract class Region implements Entity, RegionInfo, FoodSupplier {
     }
 
     @Override
+    public List<AnimalInfo> getAnimalsInfo() {
+        return new ArrayList<>(animals); 
+    }
+
+    @Override
     public JSONObject asJSON() {
         JSONObject jo = new JSONObject();
         JSONArray ja = new JSONArray();
@@ -47,5 +53,6 @@ public abstract class Region implements Entity, RegionInfo, FoodSupplier {
         jo.put("animals", ja);
         return jo;
     }
+
 
 }

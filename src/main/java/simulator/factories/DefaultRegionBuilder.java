@@ -14,6 +14,12 @@ public class DefaultRegionBuilder extends Builder<Region> {
     @Override
     protected Region createInstance(JSONObject data) {
         return new DefaultRegion();
-    }   
+    }  
+
+    @Override
+    protected void fillInData(JSONObject o) {
+        // La default no necesita parámetros extra en data, pero hay que avisar de la descripción
+        // No hace falta meter nada en o para los datos si no requiere nada.
+    }
 
 }

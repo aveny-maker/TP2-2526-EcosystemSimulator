@@ -9,7 +9,7 @@ public class DefaultRegion extends Region {
         //No hace nada.
     }
 
-     @Override
+    @Override
     public double getFood(AnimalInfo a, double dt) {
         //Si es carnívoro, devuelve 0.0
         if (a.getDiet() == Animal.Diet.CARNIVORE) {
@@ -25,6 +25,13 @@ public class DefaultRegion extends Region {
         }
         // Aplicamos la fórmula dada:
         return 60.0 * Math.exp(-Math.max(0, n - 5.0) * 2.0) * dt;
+    }
+
+
+    // TOSTRING
+    @Override
+    public String toString() {
+        return "Default Region";
     }
 
 }

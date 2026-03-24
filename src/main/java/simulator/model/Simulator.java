@@ -8,7 +8,7 @@ import org.json.JSONObject;
 
 import simulator.factories.Factory;
 
-public class Simulator implements JSONable{
+public class Simulator implements JSONable, Observable<EcoSysObserver> {
 
     //ATRIBUTOS
     private Factory<Animal> animalsFactory;
@@ -16,6 +16,7 @@ public class Simulator implements JSONable{
     private RegionManager regionManager;
     private List<Animal> animals;
     private double time;
+    private List<EcoSysObserver> observers; // Lista de observadores
 
     //CONSTRUCTOR
     public Simulator(int cols, int rows, int width, int height, Factory<Animal> animalsFactory, Factory<Region> regionsFactory) {
@@ -24,12 +25,16 @@ public class Simulator implements JSONable{
         this.regionManager = new RegionManager(cols, rows, width, height);
         this.animals = new ArrayList<>();
         this.time = 0.0;
+        this.observers = new java.util.ArrayList<>();
     }
 
 
     //MÉTODOS DE REGIONES
     private void setRegion(int row, int col, Region r) {
         regionManager.setRegion(row, col, r);
+
+        //notificación para los observadores
+        notifyOnRegionSet(row, col, r);
     }
 
     public void setRegion(int row, int col, JSONObject rJson) {
@@ -44,6 +49,9 @@ public class Simulator implements JSONable{
             animals.add(a);
             regionManager.registerAnimal(a);
         }
+
+        //notificación para los observadores
+        notifyOnAnimalAdded(a);
     }
 
     public void addAnimal(JSONObject aJson) {
@@ -108,6 +116,22 @@ public class Simulator implements JSONable{
         for (Animal baby : babies) {
             addAnimal(baby);
         }
+
+        //notificación para los observadores
+        notifyOnAdvance(dt);
+
+    }
+
+
+
+    //RESETEAR SIMULACIÓN
+    public void reset(int cols, int rows, int width, int height){
+        this.animals.clear();
+        this.regionManager = new RegionManager(cols, rows, width, height);
+        this.time = 0.0;
+
+        //notificación para los observadores
+        notifyOnReset();
     }
 
     //SALIDA JSON
@@ -118,6 +142,56 @@ public class Simulator implements JSONable{
         jo.put("state", regionManager.asJSON()); 
         return jo;
     }
+
+
+
+    //MÉTODOS PARA OBSERVADORES
+
+    @Override
+    public void addObserver(EcoSysObserver o) {
+        if (!observers.contains(o)) {
+            observers.add(o);
+            o.onRegister(time, regionManager, new java.util.ArrayList<>(animals));
+        }
+    }
+
+    @Override
+    public void removeObserver(EcoSysObserver o) {
+        observers.remove(o);
+    }
+
+
+    //MÉTODOS DE NOTIFICACIÓN
+
+    private void notifyOnAdvance(double dt) {
+        List<AnimalInfo> animalsInfo = new java.util.ArrayList<>(animals);
+        for (EcoSysObserver o : observers) {
+            o.onAdvance(time, regionManager, animalsInfo, dt);
+        }
+    }
+
+    private void notifyOnReset() {
+        List<AnimalInfo> animalsInfo = new java.util.ArrayList<>(animals);
+        for (EcoSysObserver o : observers) {
+            o.onReset(time, regionManager, animalsInfo);
+        }
+    }
+
+    private void notifyOnAnimalAdded(Animal a) {
+        List<AnimalInfo> animalsInfo = new java.util.ArrayList<>(animals);
+        for (EcoSysObserver o : observers) {
+            o.onAnimalAdded(time, regionManager, animalsInfo, a);
+        }
+    }
+
+    private void notifyOnRegionSet(int row, int col, Region r) {
+        // Aquí no hace falta copiar la lista de animales
+        for (EcoSysObserver o : observers) {
+            o.onRegionSet(row, col, regionManager, r);
+        }
+    }
+
+
 
 
 

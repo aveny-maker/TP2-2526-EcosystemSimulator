@@ -63,15 +63,15 @@ public class Main {
 
   // some attributes to stores values corresponding to command-line parameters
   private static Double time = null;
-  private static Double deltaTime = null;
+  public static Double deltaTime = null; //publico porque lo va a necesitar la interfaz gráfica para mostrarlo en pantalla
   private static String inFile = null;
   private static String outFile = null;
   private static boolean simpleViewer = false;
-  private static ExecMode mode = ExecMode.BATCH;
+  private static ExecMode mode = ExecMode.GUI;
 
-  //factorias
-  private static Factory<Animal> animalsFactory;
-  private static Factory<Region> regionsFactory;
+  //factorias (publicas porque las va a necesitar la interfaz gráfica para mostrar la descripción de los objetos en pantalla)
+  public static Factory<Animal> animalsFactory;
+  public static Factory<Region> regionsFactory;
 
 
   private static void parseArgs(String[] args) {
@@ -84,13 +84,19 @@ public class Main {
     try {
       CommandLine line = parser.parse(cmdLineOptions, args);
       parseHelpOption(line, cmdLineOptions);
+
+      //leemos el modo
+      parseModeOption(line);
+
+      //leemos archivo sabiendo el modo
       parseInFileOption(line);
+
       parseOutFileOption(line);
       parseTimeOption(line);
       parseDeltaTimeOption(line);
       parseSimpleViewerOption(line);
 
-      // if there are some remaining arguments, then something wrong is provided in the command line!
+  
       
       String[] remaining = line.getArgs();
       if (remaining.length > 0) {
@@ -114,7 +120,7 @@ public class Main {
     cmdLineOptions.addOption(Option.builder("h").longOpt("help").desc("Print this message.").build());
 
     // input file
-    cmdLineOptions.addOption(Option.builder("i").longOpt("input").hasArg().desc("A configuration file.").build());
+    cmdLineOptions.addOption(Option.builder("i").longOpt("input").hasArg().desc("A configuration file (optional in GUI mode).").build());
 
     // output file
     cmdLineOptions.addOption(Option.builder("o").longOpt("output").hasArg().desc("Output file, where output is written.").build());
@@ -127,6 +133,9 @@ public class Main {
 
     // simple viewer
     cmdLineOptions.addOption(Option.builder("sv").longOpt("simple-viewer").desc("Show the viewer window in console mode.").build());
+
+    // mode
+    cmdLineOptions.addOption(Option.builder("m").longOpt("mode").hasArg().desc("Execution Mode. Possible values: 'batch' (Batch mode), 'gui' (Graphical User Interface mode). Default value: 'gui'.").build());
 
     return cmdLineOptions;
   }
@@ -141,8 +150,8 @@ public class Main {
 
   private static void parseInFileOption(CommandLine line) throws ParseException {
     inFile = line.getOptionValue("i");
-    if (mode == ExecMode.BATCH && inFile == null) {
-      throw new ParseException("In batch mode an input configuration file is required");
+    if (inFile == null && mode == ExecMode.BATCH) {
+      throw new ParseException("An input file is required in batch mode");
     }
   }
 
@@ -174,6 +183,20 @@ public class Main {
     simpleViewer = line.hasOption("sv");
   }
 
+  private static void parseModeOption(CommandLine line) throws ParseException {
+    if (line.hasOption("m")) {
+      String m = line.getOptionValue("m");
+      if (m.equals("batch")) {
+        mode = ExecMode.BATCH;
+      } else if (m.equals("gui")) {
+        mode = ExecMode.GUI;
+      } else {
+        throw new ParseException("Invalid execution mode: " + m);
+      }
+    }
+    // Si no han puesto el comando -m, no hacemos nada y se queda con el valor por defecto (ExecMode.GUI) que pusimos en los atributos.
+  }
+
   private static void initFactories() {
     //inicializar factoría de estrategias
     List<Builder<SelectionStrategy>> strategyBuilders = new ArrayList<>();
@@ -201,39 +224,55 @@ public class Main {
 
 
   private static void start_batch_mode() throws Exception {
-    // cargar el archivo de entrada
-    InputStream is = new FileInputStream(new File(inFile));
-    JSONObject jsonInput = loadJSONFile(is);
+    // usamos el método auxiliar para crear el controlador
+    Controller ctrl = createController();
 
-    // configurar el archivo de salida (o consola si no hay output)
+    // configurar el archivo de salida
     OutputStream os = (outFile == null) ? System.out : new FileOutputStream(new File(outFile));
-
-    // crear instancia del Simulador extrayendo datos del JSON
-    int cols = jsonInput.getInt("cols");
-    int rows = jsonInput.getInt("rows");
-    int width = jsonInput.getInt("width");
-    int height = jsonInput.getInt("height");
-
-    Simulator sim = new Simulator(cols, rows, width, height, animalsFactory, regionsFactory);
-
-    // crear instancia del Controlador
-    Controller ctrl = new Controller(sim);
-
-    // cargar datos desde el JSON
-    ctrl.loadData(jsonInput);
 
     // arrancar la simulación
     ctrl.run(time, deltaTime, simpleViewer, os);
 
-    // cerrar flujos (importante para no dejar archivos bloqueados)
+    // cerrar flujo
     if (outFile != null) {
       os.close();
     }
-    is.close();
   }
 
   private static void start_GUI_mode() throws Exception {
-    throw new UnsupportedOperationException("GUI mode is not ready yet ...");
+    // usamos el método auxiliar
+    Controller ctrl = createController();
+
+    // lanzamos la interfaz gráfica
+    javax.swing.SwingUtilities.invokeAndWait(() -> new simulator.view.MainWindow(ctrl));
+  }
+
+  // MÉTODO AUXILIAR PARA NO REPETIR CÓDIGO EN GUI Y BATCH
+  private static Controller createController() throws Exception {
+    Simulator sim;
+    Controller ctrl;
+
+    if (inFile != null) {
+      // Si hay archivo, lo leemos y cargamos los datos
+      InputStream is = new FileInputStream(new File(inFile));
+      JSONObject jsonInput = loadJSONFile(is);
+
+      int cols = jsonInput.getInt("cols");
+      int rows = jsonInput.getInt("rows");
+      int width = jsonInput.getInt("width");
+      int height = jsonInput.getInt("height");
+
+      sim = new Simulator(cols, rows, width, height, animalsFactory, regionsFactory);
+      ctrl = new Controller(sim);
+      ctrl.loadData(jsonInput);
+      is.close();
+    } else {
+      // Si no hay archivo (solo posible en GUI), usamos valores por defecto
+      sim = new Simulator(15, 20, 800, 600, animalsFactory, regionsFactory);
+      ctrl = new Controller(sim);
+    }
+
+    return ctrl;
   }
 
   private static void start(String[] args) throws Exception {

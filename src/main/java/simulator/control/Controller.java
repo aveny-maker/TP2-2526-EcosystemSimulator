@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import simulator.model.AnimalInfo;
+import simulator.model.EcoSysObserver;
 import simulator.model.MapInfo;
 import simulator.model.Simulator;
 import simulator.view.SimpleObjectViewer;
@@ -122,5 +123,23 @@ public class Controller {
         //escribir resultado en el OutputStream
         PrintStream p = new PrintStream(out);
         p.println(result.toString(3));
+    }
+
+
+    //MÉTODOS PARA LOS OBSERVADORES
+    public void addObserver(EcoSysObserver o) {
+        sim.addObserver(o);
+    }
+
+    public void removeObserver(EcoSysObserver o) {
+        sim.removeObserver(o);
+    }
+
+    public void reset(int cols, int rows, int width, int height) {
+        sim.reset(cols, rows, width, height);
+    }
+
+    public void advance(double dt) {
+        sim.advance(dt);
     }
 }
