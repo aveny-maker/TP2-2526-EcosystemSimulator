@@ -30,9 +30,19 @@ public class Controller {
     public void loadData(JSONObject data) {
 
         // cargamos las regiones (primero porque si un animal cae en una casilla sin región daría error)
-        if (data.has("regions")) {
-            JSONArray regions =data.getJSONArray("regions");
-            for (int i = 0; i <regions.length(); i++) {
+        setRegions(data);
+
+
+        // cargamos los animales
+        setAnimals(data);
+        
+    }
+
+    //MÉTODO PÚBLICO PARA CAMBIAR REGIONES
+    public void setRegions(JSONObject rs) {
+        if (rs.has("regions")) {
+            JSONArray regions = rs.getJSONArray("regions");
+            for (int i = 0; i < regions.length(); i++) {
                 JSONObject rObj = regions.getJSONObject(i);
 
                 JSONArray rowRange = rObj.getJSONArray("row");
@@ -44,31 +54,32 @@ public class Controller {
                 int cf = colRange.getInt(0);
                 int ct = colRange.getInt(1);
 
-                //asignamos la region a todas las casillas del rango
-                for (int r = rf; r<=rt; r++) {
-                    for (int c = cf; c<=ct; c++) {
+                // Asignamos la region a todas las casillas del rango
+                for (int r = rf; r <= rt; r++) {
+                    for (int c = cf; c <= ct; c++) {
                         sim.setRegion(r, c, spec);
                     }
                 }
             }
         }
+    }
 
-
-        // cargamos los animales
+    //MÉTODO PÚBLICO PARA CAMBIAR ANIMALES
+    public void setAnimals(JSONObject data) {
         if (data.has("animals")) {
             JSONArray animals = data.getJSONArray("animals");
-            for (int i =0; i<animals.length(); i++) {
+            for (int i = 0; i < animals.length(); i++) {
                 JSONObject aObj = animals.getJSONObject(i);
                 int amount = aObj.getInt("amount");
                 JSONObject spec = aObj.getJSONObject("spec");
 
-                //bucle para añadir n animales de esta especificación
-                for (int j =0; j<amount; j++) {
+                for (int j = 0; j < amount; j++) {
                     sim.addAnimal(spec);
                 }
             }
         }
     }
+
 
 
     // MÉTODO AUXILIAR PARA EL VISOR
