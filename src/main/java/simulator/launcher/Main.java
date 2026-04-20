@@ -57,9 +57,14 @@ public class Main {
     }
   }
   
-// default values for some parameters
-  private final static Double DEFAULT_TIME = 10.0; // in seconds
-  private final static Double DEFAULT_DELTA_TIME = 0.03; // in seconds
+// parametros
+  private final static Double DEFAULT_TIME = 10.0;
+  private final static Double DEFAULT_DELTA_TIME = 0.03; 
+  private final static int DEFAULT_WIDTH = 800; 
+  private final static int DEFAULT_HEIGHT = 600;
+  private final static int DEFAULT_COLS = 20;
+  private final static int DEFAULT_ROWS = 15;
+
 
   // some attributes to stores values corresponding to command-line parameters
   private static Double time = null;
@@ -268,7 +273,7 @@ public class Main {
       is.close();
     } else {
       // Si no hay archivo (solo posible en GUI), usamos valores por defecto
-      sim = new Simulator(15, 20, 800, 600, animalsFactory, regionsFactory);
+      sim = new Simulator(DEFAULT_COLS, DEFAULT_ROWS, DEFAULT_WIDTH, DEFAULT_HEIGHT, animalsFactory, regionsFactory);
       ctrl = new Controller(sim);
     }
 

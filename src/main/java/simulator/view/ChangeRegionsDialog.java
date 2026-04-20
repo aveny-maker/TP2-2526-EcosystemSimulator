@@ -64,7 +64,7 @@ public class ChangeRegionsDialog extends JDialog implements EcoSysObserver {
         setContentPane(mainPanel);
 
         //TEXTO DE AYUDA
-        JLabel helpLabel = new JLabel("<html><p style='margin: 10px;'>Select a region type, the rows/cols range, and provide the specific parameters to change the region type in the selected area.</p></html>");
+        JLabel helpLabel = new JLabel("<html><p style='margin: 10px 10px 5px 10px;'>Select a region type, the rows/cols interval, and provide values for the parameters in the <b>Value</b> column (default values are used for parameters with no value).</p></html>");
         helpLabel.setAlignmentX(CENTER_ALIGNMENT);
         mainPanel.add(helpLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -100,47 +100,45 @@ public class ChangeRegionsDialog extends JDialog implements EcoSysObserver {
 
         //PANEL DE COMBOBOXES
 
-        //creamos un subpanel para agrupar lso menus despegables
+        //creamos un subpanel para agrupar los menus desplegables
         JPanel combosPanel = new JPanel();
         combosPanel.setAlignmentX(CENTER_ALIGNMENT);
 
-        //selccion del rango de filas
+        //selección del tipo de región
+        combosPanel.add(new JLabel("Region type: "));
+        this.regionsModel = new DefaultComboBoxModel<>();
+        for (JSONObject info : regionsInfo) {
+            regionsModel.addElement(info.getString("desc"));
+        }
+        JComboBox<String> regionsComboBox = new JComboBox<>(regionsModel);
+        
+        // conectamos la selección
+        regionsComboBox.addActionListener(e -> updateTableModel(regionsComboBox.getSelectedIndex()));
+        combosPanel.add(regionsComboBox);
+
+        //espaciado
+        combosPanel.add(new JLabel(" "));
+
+        //selección del rango de filas
         combosPanel.add(new JLabel("Row from/to: "));
         fromRowModel = new DefaultComboBoxModel<>();
         combosPanel.add(new JComboBox<>(fromRowModel));
         toRowModel = new DefaultComboBoxModel<>();
         combosPanel.add(new JComboBox<>(toRowModel));
 
-        //seleccion del rango de columnas
-        combosPanel.add(new JLabel("   Col from/to: "));
+        //espacio
+        combosPanel.add(new JLabel(" "));
+
+        //selección del rango de columnas 
+        combosPanel.add(new JLabel("Column from/to: "));
         fromColModel = new DefaultComboBoxModel<>();
         combosPanel.add(new JComboBox<>(fromColModel));
         toColModel = new DefaultComboBoxModel<>();
         combosPanel.add(new JComboBox<>(toColModel));
 
-        //sseleccion del tippo de region
-        combosPanel.add(new JLabel("   Region type: "));
-        this.regionsModel = new DefaultComboBoxModel<>();
-
-        //añadir la descripción de todas las regiones al despegable de seleccion de regiones
-        for (JSONObject info : regionsInfo) {
-            regionsModel.addElement(info.getString("desc"));
-        }
-
-
-        JComboBox<String> regionsComboBox = new JComboBox<>(regionsModel);
-        
-        ///conectamos la seleccion del ComboBox con la tabla
-        //al cambiar de region, se actualiza la tabla para pedir los parametros especificos de esa región
-        regionsComboBox.addActionListener(e -> updateTableModel(regionsComboBox.getSelectedIndex()));
-        combosPanel.add(regionsComboBox);
-
-
         //añadimos el subpanel de combos al panel principal y dejamos un espacio debajo
         mainPanel.add(combosPanel);
-        mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-
-
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 25)));
 
         //BOTONES OK Y CANCEL
 
@@ -170,7 +168,7 @@ public class ChangeRegionsDialog extends JDialog implements EcoSysObserver {
 
 
         //configuracion de ventana
-        setPreferredSize(new Dimension(750, 400)); //tamaño base
+        setPreferredSize(new Dimension(850, 400)); //tamaño base
         pack(); //ajusta componentes internos para que quepan bien
         setResizable(false); //bloqueamos el redimensionado para evitar problemas de diseño
 

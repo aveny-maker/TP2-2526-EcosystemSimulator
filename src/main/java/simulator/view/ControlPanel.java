@@ -38,6 +38,7 @@ public class ControlPanel extends JPanel {
     private JButton runButton;
     private JButton stopButton;
     private JButton quitButton;
+    private ChangeRegionsDialog changeRegionsDialog;
 
     //inputs
     private JSpinner stepsSpinner;
@@ -46,6 +47,7 @@ public class ControlPanel extends JPanel {
     //constructor
     public ControlPanel(Controller ctrl) {
         this.ctrl = ctrl;
+        this.changeRegionsDialog = new ChangeRegionsDialog(ctrl);
         initGUI();
     }
 
@@ -91,9 +93,11 @@ public class ControlPanel extends JPanel {
         viewerButton = new JButton();
         viewerButton.setToolTipText("Open Map Viewer");
         viewerButton.setIcon(new ImageIcon(getClass().getResource("/icons/viewer.png")));
+
         viewerButton.addActionListener(e -> {
-            // TODO: new MapWindow(ViewUtils.getWindow(this), ctrl); // Lo activaremos en la Fase 4
+            new MapWindow(ViewUtils.getWindow(this), ctrl); 
         });
+
         toolBar.add(viewerButton);
 
         // BOTÓN REGIONES
@@ -101,7 +105,7 @@ public class ControlPanel extends JPanel {
         regionsButton.setToolTipText("Change Regions");
         regionsButton.setIcon(new ImageIcon(getClass().getResource("/icons/regions.png")));
         regionsButton.addActionListener(e -> {
-            // TODO: changeRegionsDialog.open(ViewUtils.getWindow(this)); // Lo activaremos en la Fase 3
+            changeRegionsDialog.open(ViewUtils.getWindow(this));
         });
         toolBar.add(regionsButton);
         toolBar.addSeparator();

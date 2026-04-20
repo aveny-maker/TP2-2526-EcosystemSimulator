@@ -50,7 +50,8 @@
       <artifactId>viewer</artifactId>
       <version>1.0.0</version>
       <scope>system</scope>
-      <systemPath>${pom.basedir}/lib/viewer.jar</systemPath> </dependency>
+      <systemPath>${pom.basedir}/lib/viewer.jar</systemPath> 
+    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
@@ -65,8 +66,7 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.5.1</version>
         <configuration>
-          <mainClass>simulator.launcher.Main</mainClass> <!-- para mvn exec:java -->
-          <arguments>
+          <mainClass>simulator.launcher.Main</mainClass> <arguments>
             <argument>-i</argument>
             <argument>src/main/resources/examples/ex3.json</argument>
             <argument>-o</argument>
@@ -79,6 +79,28 @@
           </arguments>
           <classpathScope>compile</classpathScope>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <archive>
+                <manifest>
+                  <mainClass>simulator.launcher.Main</mainClass>
+                </manifest>
+              </archive>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

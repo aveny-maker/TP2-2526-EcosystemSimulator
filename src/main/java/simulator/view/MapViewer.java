@@ -21,58 +21,34 @@ import simulator.model.Animal;
 import simulator.model.AnimalInfo;
 import simulator.model.MapInfo;
 
-/*
- * An incomplete version of  the map viewer, to be completed by students.
- */
+
 
 @SuppressWarnings("serial")
 public class MapViewer extends AbstractMapViewer {
 
 	// Anchura/altura de la simulación -- se supone que siempre van a ser
 	// iguales al tamaño del componente
-	//
-	// Width/height of the simulation -- they will always be equal to the size
-	// of the component
-	//
 	private int width;
 	private int height;
 
 	// Número de filas/columnas de la simulación (regiones)
-	//
-	// Number of rows/cols of the simulation (regions)
-	//
 	private int rows;
 	private int cols;
 
 	// Anchura/altura de una región
-	//
-	// Width/height of a region
-	//
 	int rWidth;
 	int rHeight;
 
 	// Mostramos sólo animales con este estado. Los posibles valores de currState
 	// son null, y los valores de Animal.State.values(). Si es null mostramos todo.
-	//
-	// We show the animals that have this state. The possible values of currentState
-	// are: null and the values returned by Animal.State.values(). If it is null we
-	// show all animals.
-	//
 	Animal.State currentState;
 
 	// En estos atributos guardamos la lista de animales y el tiempo que hemos
 	// recibido la última vez para dibujarlos.
-	//
-	// The value of these attributes are the list of animals and the time that we
-	// have received in the notification (those will be shown).
-	//
 	volatile private Collection<AnimalInfo> objs;
 	volatile private Double time;
 
 	// Una clase auxiliar para almacenar información sobre una especie.
-	//
-	// An auxiliary class to store information about species.
-	//
 	private static class SpeciesInfo {
 		private Integer count;
 		private Color color;
@@ -84,21 +60,12 @@ public class MapViewer extends AbstractMapViewer {
 	}
 
 	// Un mapa para la información sobre las especies.
-	//
-	// A map with the information for each species.
-	//
 	Map<String, SpeciesInfo> kindsInfo = new HashMap<>();
 
 	// El font que usamos para dibujar texto.
-	//
-	// The font to be used for drawing text.
-	//
 	private Font textFont = new Font("Arial", Font.BOLD, 12);
 
 	// Indica si mostramos el texto la ayuda o no.
-	//
-	// Indicates if the 'help' information is visible or hidden.
-	//
 	private boolean showHelp;
 
 	public MapViewer() {
@@ -116,14 +83,20 @@ public class MapViewer extends AbstractMapViewer {
 					repaint();
 					break;
 				case 's':
-					// TODO Cambiar currState al siguiente (de manera circular). Después de null
-					//      viene el primero de Animal.State.values() y después del último viene null.
-					//
-					//      Change currState to the next option (in a circular way). After null
-					//      comes the first element of Animal.State.values(), and after the last of
-					//      these values comes null.
-					//
+					//cambiar currState de manera circular
+					Animal.State[] allStates = Animal.State.values();
+					if (currentState == null) {
+						currentState = allStates[0];
+					} else {
+						int nextIndex = currentState.ordinal() + 1;
+						if (nextIndex < allStates.length) {
+							currentState = allStates[nextIndex];
+						} else {
+							currentState = null;
+						}
+					}
 					repaint();
+					break;
 				default:
 				}
 			}
@@ -134,25 +107,15 @@ public class MapViewer extends AbstractMapViewer {
 
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				// Esto es necesario para capturar las teclas cuando el ratón está sobre este
-				// componente.
-				//
-				// This is needed to capture keystroke when the mouse is over this component.
-				//
+				// Esto es necesario para capturar las teclas cuando el ratón está sobre este componente.
 				requestFocus();
 			}
 		});
 
 		// Por defecto mostramos todos los animales.
-		//
-		// By default, we show all animals.
-		//
 		currentState = null;
 
 		// Por defecto mostramos el texto de ayuda.
-		//
-		// By default, the 'help' message is visible.
-		//
 		showHelp = true;
 	}
 
@@ -165,120 +128,96 @@ public class MapViewer extends AbstractMapViewer {
 		gr.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
 		// Cambiar el font para dibujar texto.
-		//
-		// Change the font to be used when drawing text.
-		//
 		g.setFont(textFont);
 
 		// Dibujar fondo blanco.
-		//
-		// Draw a white background.
-		//
 		gr.setBackground(Color.WHITE);
 		gr.clearRect(0, 0, width, height);
 
 		// Dibujar los animales, el tiempo, información sobre las especies, etc.
-		//
-		// Draw the animals, the time, species information. etc.
-		//
-		if (objs != null)
-			drawObjects(gr, objs, time);
+		if (objs != null) drawObjects(gr, objs, time);
 
-		// TODO Mostrar el texto de ayuda si showHelp es true. El texto a mostrar es el
-		//      siguiente (en 2 líneas):
-		//
-		//      Show a 'help' text if showHelp is true. The text should be the following
-		//      in two separated lines:
-		//
-		// h: toggle help
-		// s: show animals of a specific state
-
+		if (showHelp) {
+			gr.setColor(Color.RED);
+			gr.drawString("h: toggle help", 10, 20);
+			gr.drawString("s: show animals of a specific state", 10, 35);
+		}
 	}
 
 	private boolean visible(AnimalInfo a) {
-		// TODO Devolver true si el animal es visible, es decir si currState es null o
-		//      su estado es igual a currState.
-		//
-		//      return true of the animal is visible, i.e., currState is null or its
-		//      state is equal to currState.
-		//
-		return true;
+	//Devolver true si es visible según el estado
+		return currentState == null || a.getState() == currentState;
 	}
 
 	private void drawObjects(Graphics2D g, Collection<AnimalInfo> animals, Double time) {
+		//dibujar el grid de regiones
+		g.setColor(Color.LIGHT_GRAY);
 
-		// TODO Dibujar el grid de regiones.
-		//
-		//      Draw a grid of regions.
-		//
+		//lineas verticales
+		for (int i = 0; i <= cols; i++) {
+			g.drawLine(i * rWidth, 0, i * rWidth, height);
+		}
+		//lineas horizontales
+		for (int i = 0; i <= rows; i++) {
+			g.drawLine(0, i * rHeight, width, i * rHeight);
+		}
 
-
-		// Dibujar los animales.
-		//
-		// Draw the animals
-		//
+		//dibujar los animales.
 		for (AnimalInfo a : animals) {
 
 			// Si no es visible saltamos la iteración.
-			//
-			// If the animal is not visible, we skip to the next iteration.
-			//
-			if (!visible(a))
-				continue;
+			if (!visible(a)) continue;
 
 			// La información sobre la especie de 'a'.
-			//
-			// Information of the species of 'a'
-			//
 			SpeciesInfo speciesInfo = kindsInfo.get(a.getGeneticCode());
 
-			// TODO Si espInfo es null, añade una entrada correspondiente al mapa. Para el
-			//      color usa ViewUtils.getColor(a.getGeneticCode()).
-			//
-			//      If espInfo is null, add a corresponding entry to the map. For the color
-			//      use ViewUtils.getColor(a.getGeneticCode()).
+			//crear entrada si es null
+			if (speciesInfo == null) {
+				speciesInfo = new SpeciesInfo(ViewUtils.getColor(a.getGeneticCode()));
+				kindsInfo.put(a.getGeneticCode(), speciesInfo);
+			}
 
+			//incrementar contador
+			speciesInfo.count++;
 
-			// TODO Incrementar el contador de la especie (es decir el contador dentro de
-			//      speciesInfo).
-			//
-			//      Increment the counter of the species (i.e., the one inside speciesInfo).
-
-			// TODO Dibujar el animal en la posición correspondiente, usando el color
-			//      speciesInfo.color. Su tamaño tiene que ser relativo a su edad, por ejemplo
-			// 	    edad/2+2. Se puede dibujar usando fillRoundRect, fillRect o fillOval.
-			//
-			//      Draw the animal at the corresponding position, using the color
-			//      speciesInfo.color. Its size should be relative to the animal's age, e.g.,
-			//      age/2+2. For drawing you can use fillRoundRect, fillRect or fillOval.
+			//dibujar el animal según su edad y color
+			g.setColor(speciesInfo.color);
+			int size = (int) (a.getAge() / 2.0) + 2;
+			int x = (int) a.getPosition().getX() - size / 2;
+			int y = (int) a.getPosition().getY() - size / 2;
+			g.fillOval(x, y, size, size);
 		}
 
-		// TODO Dibujar la etiqueta del estado visible, usando currState.toString(), si no
-		//      es null.
-		//
-		//      Draw the tag of the visible state, using currState.toString(), if it is not null.
+		// Establecemos el color para las etiquetas de texto (estado y tiempo)
+		g.setColor(Color.MAGENTA);
+
+		//etiqueta del estado visible
+		int yPos = showHelp ? 60 : 20; // bajamos el texto si la ayuda esta visible
+		if (currentState != null) {
+			drawStringWithRect(g, 10, yPos, "State: " + currentState.toString());
+			yPos += 20;
+		}
 
 
-		// TODO Dibujar la etiqueta del tiempo. Para escribir solo 3 decimales puede
-		//      usar String.format("%.3f", time).
-		//
-		//      Draw the time. To use only 3 decimals you can use String.format("%.3f", time).
+		//etiqueta del tiempo
+		drawStringWithRect(g, 10, yPos, "Time: " + String.format("%.3f", time));
+		yPos += 30; // Dejamos hueco para empezar a pintar las especies
 
 
-		// TODO Dibujar la información de todas la especies. Al final de la iteración
-		//      poner el contador de la especie correspondiente a 0 (para resetear el cuento)
-		//
-		//      Draw the information of each species. At the end of the iteration, reset the
-		//      species count.
-		//
+		//dibujar info de especies y resetear contadores
 		for (Entry<String, SpeciesInfo> e : kindsInfo.entrySet()) {
+			SpeciesInfo info = e.getValue();
+			g.setColor(info.color);
+			drawStringWithRect(g, 10, yPos, e.getKey() + ": " + info.count);
+			yPos += 20;
+			
+			//resetear contador para el próximo frame
+			info.count = 0; 
 		}
 	}
 
 	// Un método que dibujar un texto con un rectángulo.
-	//
-	// A method for drawing a text with a rectangular border.
-	//
+
 	void drawStringWithRect(Graphics2D g, int x, int y, String s) {
 		Rectangle2D rect = g.getFontMetrics().getStringBounds(s, g);
 		g.drawString(s, x, y);
@@ -287,31 +226,22 @@ public class MapViewer extends AbstractMapViewer {
 
 	@Override
 	public void update(List<AnimalInfo> objs, Double time) {
-		// TODO Almacenar objs y time en los atributos correspondientes y llamar a
-		//      repaint() para redibujar el componente.
-		//
-		//      Store objs and time in the corresponding fields, and call repaint() to
-		//      redraw the component.
+		//guardar atributos y repintar
+		this.objs = objs;
+		this.time = time;
+		repaint();
 	}
 
 	@Override
-	public void reset(double time, MapInfo map, List<AnimalInfo> animals) {
-		// TODO Actualizar los atributos width, height, cols, rows, etc.
-		//
-		//      Update the fields width, height, cols, rows, etc.
+	public void reset(double time, MapInfo map, List<AnimalInfo> animals) {// RESUELTO TODO 12: Actualizar atributos de dimensiones
+		this.width = map.getWidth();
+		this.height = map.getHeight();
+		this.cols = map.getCols();
+		this.rows = map.getRows();
+		this.rWidth = map.getRegionWidth();
+		this.rHeight = map.getRegionHeight();
 
-		// Esto cambia el tamaño del componente, y así cambia el tamaño de la ventana
-		// porque en MapWindow llamamos a pack() después de llamar a reset.
-		//
-		// This line changes the size of the component, and thus the size of the window
-		// because MapWindow calls pack() after calling reset().
-		//
 		setPreferredSize(new Dimension(map.getWidth(), map.getHeight()));
-
-		// Dibuja el estado.
-		//
-		// Draw the state.
-		//
 		update(animals, time);
 	}
 
